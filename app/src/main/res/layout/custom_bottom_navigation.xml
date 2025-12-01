@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@color/bottom_nav_background"
+    android:elevation="8dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:gravity="center_vertical">
+
+    <LinearLayout
+        android:id="@+id/nav_item_routes"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:background="@drawable/bottom_nav_item_background">
+
+        <ImageView
+            android:id="@+id/icon_routes"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/route"
+            android:tint="@drawable/bottom_nav_item_selector" />
+
+        <TextView
+            android:id="@+id/label_routes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Routes"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@drawable/bottom_nav_item_selector"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/nav_item_profile"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:background="@drawable/bottom_nav_item_background">
+
+        <ImageView
+            android:id="@+id/icon_profile"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/user"
+            android:tint="@drawable/bottom_nav_item_selector" />
+
+        <TextView
+            android:id="@+id/label_profile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Profile"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@drawable/bottom_nav_item_selector"
+            android:visibility="gone" />
+    </LinearLayout>
+
+</LinearLayout>
+

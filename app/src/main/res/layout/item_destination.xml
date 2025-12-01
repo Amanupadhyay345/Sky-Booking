@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="320dp"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="16dp"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Destination Image -->
+        <ImageView
+            android:id="@+id/iv_destination"
+            android:layout_width="0dp"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="false"
+            android:contentDescription="Destination image"
+            android:background="#E0E0E0"
+            android:importantForAccessibility="no"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:src="@drawable/offer" />
+
+        <!-- Heart Icon (Favorite) -->
+        <ImageView
+            android:id="@+id/iv_favorite"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="12dp"
+            android:src="@drawable/ic_heart_outline"
+            android:background="@drawable/bg_circle_dark"
+            android:padding="6dp"
+            android:contentDescription="Favorite"
+            app:layout_constraintTop_toTopOf="@+id/iv_destination"
+            app:layout_constraintEnd_toEndOf="@+id/iv_destination" />
+
+        <!-- Destination Name Overlay -->
+        <TextView
+            android:id="@+id/tv_destination_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="8dp"
+            android:text="Egyupt"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:shadowColor="#80000000"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="4"
+            app:layout_constraintStart_toStartOf="@+id/iv_destination"
+            app:layout_constraintBottom_toTopOf="@+id/tv_destination_tag"
+            tools:text="Egyupt" />
+
+        <!-- Come to Visit Tag -->
+        <TextView
+            android:id="@+id/tv_destination_tag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
+            android:text="Come to Visit"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:shadowColor="#80000000"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="4"
+            app:layout_constraintStart_toStartOf="@+id/iv_destination"
+            app:layout_constraintBottom_toBottomOf="@+id/iv_destination"
+            tools:text="Come to Visit" />
+
+        <!-- Information Section (White Background) -->
+        <LinearLayout
+            android:id="@+id/ll_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="@color/white"
+            app:layout_constraintTop_toBottomOf="@+id/iv_destination">
+
+            <!-- Budget -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Budget :"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="normal" />
+
+                <TextView
+                    android:id="@+id/tv_budget"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="₹"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="normal"
+                    android:layout_marginStart="4dp"
+                    tools:text="₹" />
+            </LinearLayout>
+
+            <!-- Activities -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Activities :"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="normal" />
+
+                <ImageView
+                    android:id="@+id/iv_activity"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="4dp"
+                    android:src="@drawable/aeroplane"
+                    android:contentDescription="Activity icon"
+                    tools:src="@drawable/aeroplane" />
+            </LinearLayout>
+
+            <!-- Weather -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Weather :"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="normal" />
+
+                <ImageView
+                    android:id="@+id/iv_weather_sun"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="4dp"
+                    android:src="@drawable/gift"
+                    android:tint="#FFC107"
+                    android:contentDescription="Sunny weather"
+                    tools:src="@drawable/gift" />
+
+                <ImageView
+                    android:id="@+id/iv_weather_rain"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="4dp"
+                    android:src="@drawable/gift"
+                    android:tint="#2196F3"
+                    android:contentDescription="Rainy weather"
+                    tools:src="@drawable/gift" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
