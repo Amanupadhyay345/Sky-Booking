@@ -136,7 +136,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="0dp">
 
             <!-- DATE STRIP -->
             <HorizontalScrollView
@@ -248,19 +251,42 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- FLIGHT LIST -->
+            <!-- FLIGHT LIST - Two Independent RecyclerViews -->
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minHeight="400dp"
-                android:layout_marginBottom="50dp">
+                android:layout_height="600dp"
+                android:minHeight="400dp">
                 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rv_list"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"
-                    tools:listitem="@layout/item_flight_search"/>
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+                    
+                    <!-- Left RecyclerView -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_list_left"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:nestedScrollingEnabled="true"
+                        tools:listitem="@layout/item_flight_search"/>
+                    
+                    <!-- Vertical Divider -->
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="@color/text_secondary"
+                        android:alpha="0.3"/>
+                    
+                    <!-- Right RecyclerView -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_list_right"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:nestedScrollingEnabled="true"
+                        tools:listitem="@layout/item_flight_search"/>
+                </LinearLayout>
                 
                 <!-- Progress Loader -->
                 <ProgressBar
@@ -272,10 +298,10 @@
                     android:indeterminateTint="@color/orange_header"/>
             </FrameLayout>
 
-            <!-- Spacer -->
+            <!-- Spacer for bottom bar -->
             <View
                 android:layout_width="match_parent"
-                android:layout_height="120dp"/>
+                android:layout_height="60dp"/>
 
         </LinearLayout>
 

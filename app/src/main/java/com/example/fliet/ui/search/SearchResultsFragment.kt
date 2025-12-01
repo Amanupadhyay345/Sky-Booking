@@ -11,7 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fliet.DashboardActivity
 import com.example.fliet.R
@@ -27,12 +27,19 @@ class SearchResultsFragment : Fragment() {
     private var selectedDatePosition = 0
     private var selectedFilterPosition = 0
     private var isOnwardSelected = true
-    private var flightSearchResponse: FlightSearchResponse? = null
-    private var flightSearchAdapter: FlightSearchAdapter? = null
-    private var recyclerView: RecyclerView? = null
+    // Don't store flightSearchResponse as field - get from ViewModel when needed to avoid TransactionTooLargeException
+    private var flightSearchAdapterLeft: FlightSearchAdapter? = null
+    private var flightSearchAdapterRight: FlightSearchAdapter? = null
+    private var recyclerViewLeft: RecyclerView? = null
+    private var recyclerViewRight: RecyclerView? = null
     private var onBackPressedCallback: OnBackPressedCallback? = null
     private var _binding: FragmentSearchResultsBinding? = null
     private val binding get() = _binding!!
+    
+    // Helper to get response from ViewModel without storing it
+    private fun getFlightSearchResponse(): FlightSearchResponse? {
+        return viewModel.lastSearchResponse
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -77,7 +84,7 @@ class SearchResultsFragment : Fragment() {
             val returnDate = searchParams?.returnDate
             val passengers = searchParams?.passengers ?: "1"
             
-            flightSearchResponse = viewModel.lastSearchResponse
+            // Don't store in field - get from ViewModel when needed to avoid TransactionTooLargeException
 
             binding.tvFromCity.text = extractCityName(from)
             binding.tvToCity.text = extractCityName(to)
@@ -94,14 +101,17 @@ class SearchResultsFragment : Fragment() {
 
             setupFlightDirection(binding.root)
 
-            if (flightSearchResponse == null) {
-            }
-
-            recyclerView = binding.rvList
-            if (recyclerView != null && context != null) {
-                setupFlightRecyclerView()
-            } else {
-                android.util.Log.e("SearchResults", "RecyclerView or context is null!")
+            try {
+                recyclerViewLeft = binding.rvListLeft
+                recyclerViewRight = binding.rvListRight
+                if (recyclerViewLeft != null && recyclerViewRight != null && context != null) {
+                    setupFlightRecyclerView()
+                } else {
+                    android.util.Log.e("SearchResults", "RecyclerView or context is null! Left: ${recyclerViewLeft != null}, Right: ${recyclerViewRight != null}, Context: ${context != null}")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("SearchResults", "Error setting up RecyclerViews: ${e.message}", e)
+                e.printStackTrace()
             }
             
             binding.btnContinue.setOnClickListener {
@@ -334,6 +344,8 @@ class SearchResultsFragment : Fragment() {
     }
     
     private fun getFlightsForSelectedTab(): List<com.example.fliet.data.model.Flight> {
+        // Get from ViewModel instead of storing in field to avoid TransactionTooLargeException
+        val flightSearchResponse = getFlightSearchResponse()
         val tripDetails = flightSearchResponse?.data?.tripDetails
         
         return if (tripDetails != null && tripDetails.isNotEmpty()) {
@@ -350,18 +362,30 @@ class SearchResultsFragment : Fragment() {
     }
     
     private fun setupFlightRecyclerView() {
-        val flights = getFlightsForSelectedTab()
+        try {
+            val flights = getFlightsForSelectedTab()
+            
+            val flightList = if (flights.isNotEmpty()) {
+                flights
+            } else {
+                getMockFlights()
+            }
+            
+            // Split flight list into two halves - no duplicate data
+            val midPoint = (flightList.size + 1) / 2
+            val leftFlightList = flightList.take(midPoint)
+            val rightFlightList = flightList.drop(midPoint)
+            
+            // Setup Left RecyclerView with LinearLayoutManager (Vertical)
+            if (recyclerViewLeft != null && context != null) {
+                val leftLayoutManager = LinearLayoutManager(
+                    requireContext(),
+                    LinearLayoutManager.VERTICAL,
+                    false
+                )
+                recyclerViewLeft?.layoutManager = leftLayoutManager
         
-        val flightList = if (flights.isNotEmpty()) {
-            flights
-        } else {
-            getMockFlights()
-        }
-        
-        val gridLayoutManager = GridLayoutManager(requireContext(), 2)
-        recyclerView?.layoutManager = gridLayoutManager
-        
-        flightSearchAdapter = FlightSearchAdapter(flightList) { flight ->
+        flightSearchAdapterLeft = FlightSearchAdapter(leftFlightList) { flight ->
             val price = flight.fares?.firstOrNull()?.totalFare?.totalAmount?.let {
                 "₹ ${String.format("%.0f", it)}"
             } ?: "₹ 9,800"
@@ -370,35 +394,74 @@ class SearchResultsFragment : Fragment() {
             binding.tvDiscountOffer.text = "Get 20% Off"
         }
         
-        recyclerView?.adapter = flightSearchAdapter
-        recyclerView?.visibility = View.VISIBLE
-        recyclerView?.setHasFixedSize(false)
-        flightSearchAdapter?.notifyDataSetChanged()
+                recyclerViewLeft?.adapter = flightSearchAdapterLeft
+                recyclerViewLeft?.visibility = View.VISIBLE
+                recyclerViewLeft?.setHasFixedSize(false)
+            }
+            
+            // Setup Right RecyclerView with LinearLayoutManager (Vertical)
+            if (recyclerViewRight != null && context != null) {
+                val rightLayoutManager = LinearLayoutManager(
+                    requireContext(),
+                    LinearLayoutManager.VERTICAL,
+                    false
+                )
+                recyclerViewRight?.layoutManager = rightLayoutManager
         
-        if (flightList.isNotEmpty()) {
-            val firstFlight = flightList[0]
-            val price = firstFlight.fares?.firstOrNull()?.totalFare?.totalAmount?.let {
+        flightSearchAdapterRight = FlightSearchAdapter(rightFlightList) { flight ->
+            val price = flight.fares?.firstOrNull()?.totalFare?.totalAmount?.let {
                 "₹ ${String.format("%.0f", it)}"
             } ?: "₹ 9,800"
             selectedFlightPrice = price
             binding.tvTotalPrice.text = price
             binding.tvDiscountOffer.text = "Get 20% Off"
         }
+        
+                recyclerViewRight?.adapter = flightSearchAdapterRight
+                recyclerViewRight?.visibility = View.VISIBLE
+                recyclerViewRight?.setHasFixedSize(false)
+            }
+            
+            flightSearchAdapterLeft?.notifyDataSetChanged()
+            flightSearchAdapterRight?.notifyDataSetChanged()
+            
+            // Set initial price from first flight (prefer left, then right)
+            val firstFlight = leftFlightList.firstOrNull() ?: rightFlightList.firstOrNull()
+            if (firstFlight != null) {
+                val price = firstFlight.fares?.firstOrNull()?.totalFare?.totalAmount?.let {
+                    "₹ ${String.format("%.0f", it)}"
+                } ?: "₹ 9,800"
+                selectedFlightPrice = price
+                binding.tvTotalPrice.text = price
+                binding.tvDiscountOffer.text = "Get 20% Off"
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("SearchResults", "Error in setupFlightRecyclerView: ${e.message}", e)
+            e.printStackTrace()
+        }
     }
     
     private fun updateFlightsForSelectedTab() {
         binding.root.postDelayed({
-            val flights = getFlightsForSelectedTab()
-            
-            val flightList = if (flights.isNotEmpty()) {
-                android.util.Log.d("SearchResults", "Updating flights for ${if (isOnwardSelected) "Onward" else "Return"}: ${flights.size} flights")
-                flights
-            } else {
-                android.util.Log.w("SearchResults", "No flights from API, using mock data")
-                getMockFlights()
-            }
-            
-            flightSearchAdapter = FlightSearchAdapter(flightList) { flight ->
+            try {
+                val flights = getFlightsForSelectedTab()
+                
+                val flightList = if (flights.isNotEmpty()) {
+                    android.util.Log.d("SearchResults", "Updating flights for ${if (isOnwardSelected) "Onward" else "Return"}: ${flights.size} flights")
+                    flights
+                } else {
+                    android.util.Log.w("SearchResults", "No flights from API, using mock data")
+                    getMockFlights()
+                }
+                
+                // Split flight list into two halves - no duplicate data
+                val midPoint = (flightList.size + 1) / 2
+                val leftFlightList = flightList.take(midPoint)
+                val rightFlightList = flightList.drop(midPoint)
+                
+                // Update Left RecyclerView
+                if (recyclerViewLeft != null && context != null) {
+                    flightSearchAdapterLeft = FlightSearchAdapter(leftFlightList) { flight ->
                 val price = flight.fares?.firstOrNull()?.totalFare?.totalAmount?.let {
                     "₹ ${String.format("%.0f", it)}"
                 } ?: "₹ 9,800"
@@ -407,12 +470,14 @@ class SearchResultsFragment : Fragment() {
                 binding.tvDiscountOffer.text = "Get 20% Off"
             }
             
-            recyclerView?.adapter = flightSearchAdapter
-            flightSearchAdapter?.notifyDataSetChanged()
-            
-            if (flightList.isNotEmpty()) {
-                val firstFlight = flightList[0]
-                val price = firstFlight.fares?.firstOrNull()?.totalFare?.totalAmount?.let {
+                    recyclerViewLeft?.adapter = flightSearchAdapterLeft
+                    flightSearchAdapterLeft?.notifyDataSetChanged()
+                }
+                
+                // Update Right RecyclerView
+                if (recyclerViewRight != null && context != null) {
+                    flightSearchAdapterRight = FlightSearchAdapter(rightFlightList) { flight ->
+                val price = flight.fares?.firstOrNull()?.totalFare?.totalAmount?.let {
                     "₹ ${String.format("%.0f", it)}"
                 } ?: "₹ 9,800"
                 selectedFlightPrice = price
@@ -420,7 +485,27 @@ class SearchResultsFragment : Fragment() {
                 binding.tvDiscountOffer.text = "Get 20% Off"
             }
             
-            hideLoader()
+                    recyclerViewRight?.adapter = flightSearchAdapterRight
+                    flightSearchAdapterRight?.notifyDataSetChanged()
+                }
+                
+                // Set initial price from first flight (prefer left, then right)
+                val firstFlight = leftFlightList.firstOrNull() ?: rightFlightList.firstOrNull()
+                if (firstFlight != null) {
+                    val price = firstFlight.fares?.firstOrNull()?.totalFare?.totalAmount?.let {
+                        "₹ ${String.format("%.0f", it)}"
+                    } ?: "₹ 9,800"
+                    selectedFlightPrice = price
+                    binding.tvTotalPrice.text = price
+                    binding.tvDiscountOffer.text = "Get 20% Off"
+                }
+                
+                hideLoader()
+            } catch (e: Exception) {
+                android.util.Log.e("SearchResults", "Error in updateFlightsForSelectedTab: ${e.message}", e)
+                e.printStackTrace()
+                hideLoader()
+            }
         }, 300)
     }
     
